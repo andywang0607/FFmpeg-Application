@@ -146,7 +146,7 @@ int muxing(AVFormatContext* &in, AVFormatContext* &out) {
 int main(int argc, char *argv[])
 {
 
-    const char *inUrl = "runpage.flv";                          // input file
+    const char *inUrl = "../video//test.flv";                          // input file
     const char *outUrl = "rtmp://127.0.0.1:443/live/home";      // ouput url
     const char* output_format = "flv";                          // output format
 
