@@ -1,13 +1,13 @@
 # FFmpeg-Application
 Implement some application with FFmpeg SDK
- - RTMPStreaming: Upstreaming a local flv file according to RTMP protocol
+ - Vedio2RTMP: Upstreaming a local flv file according to RTMP protocol
  
 ## Environment
 - OS: Win10
 - Compiler: Visual studio 2017
 - FFmpeg: 4.3.1 (2020-10-01 release)
 
-## RTMPStreaming
+## Vedio2RTMP
 Upstreaming a local flv file according to RTMP protocol and show the streaming in web page
 ### Step
 - Get information from input file
