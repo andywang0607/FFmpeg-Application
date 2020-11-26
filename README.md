@@ -1,11 +1,18 @@
 # FFmpeg-Application
-Implement some application with FFmpeg SDK
+Just some small application for testing FFMPEG
+ - FlashVedioPlayer: Show streaming in web page
  - Vedio2RTMP: Upstreaming a local flv file according to RTMP protocol
- 
+
 ## Environment
 - OS: Win10
 - Compiler: Visual studio 2017
 - FFmpeg: 4.3.1 (2020-10-01 release)
+
+## FlashVedioPlayer
+- Show streaming in web page
+  - Apply swfs/StrobeMediaPlayback.swf provide by Adobe
+  - pluginspage='http://www.adobe.com/go/getflashplayer' 
+  - flashvars='&src=rtmp://127.0.0.1:443/live/home&autoHideControlBar=true&streamType=live&autoPlay=true&verbose=true'
 
 ## Vedio2RTMP
 Upstreaming a local flv file according to RTMP protocol and show the streaming in web page
@@ -24,11 +31,7 @@ Upstreaming a local flv file according to RTMP protocol and show the streaming i
   - av_read_frame: Return the next frame of a stream
   - pts to dts transformation and speed control
   - av_interleaved_write_frame: Write a packet to an output media file ensuring correct interleaving
-- Show streaming in web page
-  - Apply swfs/StrobeMediaPlayback.swf provide by Adobe
-  - pluginspage='http://www.adobe.com/go/getflashplayer' 
-  - flashvars='&src=rtmp://127.0.0.1:443/live/home&autoHideControlBar=true&streamType=live&autoPlay=true&verbose=true'
 
 ## Result
-![Execute](RTMPStreaming/result/RTMPStreaming.gif)
+![Execute](Vedio2RTMP/result/RTMPStreaming.gif)
   
