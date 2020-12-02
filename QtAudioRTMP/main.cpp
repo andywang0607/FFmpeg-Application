@@ -85,8 +85,50 @@ int main(int argc, char *argv[])
         getchar();
         return -1;
     } 
+
+    /// Codec
+    // Init Audio codec
+    AVCodec *codec = avcodec_find_encoder(AV_CODEC_ID_AAC);
+    if (!codec)
+    {
+        cout << "avcodec_find_encoder AV_CODEC_ID_AAC failed!" << endl;
+        getchar();
+        return -1;
+    }
+
+    // Context for codec
+    AVCodecContext *audioContext = avcodec_alloc_context3(codec);
+    if (!audioContext)
+    {
+        cout << "avcodec_alloc_context3 AV_CODEC_ID_AAC failed!" << endl;
+        getchar();
+        return -1;
+    }
+
+    // Config audioContext 
+    audioContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    audioContext->thread_count = 8;
+    audioContext->bit_rate = 40000;
+    audioContext->sample_rate = sampleRate;
+    audioContext->sample_fmt = AV_SAMPLE_FMT_FLTP;
+    audioContext->channels = channels;
+    audioContext->channel_layout = av_get_default_channel_layout(channels);
+
+    // Open audio codec
+    ret = avcodec_open2(audioContext, codec, nullptr);
+    if (ret != 0)
+    {
+        char err[1024] = { 0 };
+        av_strerror(ret, err, sizeof(err) - 1);
+        cout << err << endl;
+        getchar();
+        return -1;
+    }
+   
     int readSize = pcm->nb_samples*channels*sampleByte;
     char *buf = new char[readSize];
+    int apts = 0;
+    AVPacket pkt = { 0 };
     while (true)
     {
         // get frame data
@@ -109,6 +151,18 @@ int main(int argc, char *argv[])
             inData, pcm->nb_samples);
         cout << len << " ";
 
+        // pts calculation
+        // nb_sample/sample_rate  = number of seconds in a frame
+        // timebase  pts = sec * timebase.den
+        pcm->pts = apts;
+        apts += av_rescale_q(pcm->nb_samples, { 1,sampleRate }, audioContext->time_base);
+
+        // codec
+        int ret = avcodec_send_frame(audioContext, pcm);
+        if (ret != 0) continue;
+        av_packet_unref(&pkt);
+        ret = avcodec_receive_packet(audioContext, &pkt);
+        if (ret != 0) continue;
     }
     delete buf;
     return a.exec();
