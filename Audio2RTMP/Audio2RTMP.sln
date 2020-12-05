@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.779
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QtAudioRTMP", "QtAudioRTMP.vcxproj", "{1F0AA13B-B883-481A-AEBD-A81D97A4DBE2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Audio2RTMP", "Audio2RTMP.vcxproj", "{1F0AA13B-B883-481A-AEBD-A81D97A4DBE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
