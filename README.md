@@ -2,6 +2,8 @@
 Just some small application for testing FFMPEG
  - FlashVedioPlayer: Show streaming in web page
  - Vedio2RTMP: Upstreaming a local flv file according to RTMP protocol
+ - WebCam2RTMP: Get image from webcam and upstreaming according to RTMP protocol
+ - Audio2RTMP: Get audio from microphone and upstreaming according to RTMP protocol
 
 ## Environment
 - OS: Win10
@@ -16,22 +18,75 @@ Just some small application for testing FFMPEG
 
 ## Vedio2RTMP
 Upstreaming a local flv file according to RTMP protocol and show the streaming in web page
-### Step
+### Implement the following function
 - Get information from input file
-  - avformat_open_input: Open an input stream and read the header
-  - avformat_find_stream_info: Read packets of a media file to get stream information
-- AVFormatContext for output
-  - avformat_alloc_output_context2: Allocate an AVFormatContext for an output format
+  - Open an input stream and read the header
+  - Read packets of a media file to get stream information
+- Muxing
+  - Allocate an AVFormatContext for an output format
+  - Add a new stream to a media file
+  - Copy paramter from codec
+- Codec 
   - avcodec_find_encoder: Find a registered encoder with a matching codec ID.
-  - avformat_new_stream: Add a new stream to a media file
-  - avcodec_parameters_copy: Copy the contents of src to dst. Any allocated fields in dst are freed and replaced with newly allocated duplicates of the corresponding fields in src
-- RTMP muxing
-  - avio_open: Create and initialize a AVIOContext for accessing the resource indicated by url
-  - avformat_write_header: Allocate the stream private data and write the stream header to an output media file
-  - av_read_frame: Return the next frame of a stream
+  - Encode
+- RTMP IO
+  - Create and initialize a AVIOContext for accessing the resource indicated by url
+  - Allocate the stream private data and write the stream header to an output media file
   - pts to dts transformation and speed control
-  - av_interleaved_write_frame: Write a packet to an output media file ensuring correct interleaving
+  - Write a packet to an output media file ensuring correct interleaving
 
-## Result
+### Result
 ![Execute](Vedio2RTMP/result/RTMPStreaming.gif)
-  
+
+
+## Webcam2RTMP
+Get image from webcam with opencv and upstreaming according to RTMP protocol
+
+### Implement the following function
+- Open camera
+  - cv::VedioCapture
+- RGB to YUV
+  - Init swsContext
+  - Init struct of yuv data
+  - Config to yuv
+  - Allocate buffur for yuv
+- Codec
+  - Find Codec
+  - Create context for codec
+  - Config parameter for codec
+  - Open codec context 
+  - Encode
+- Muxing
+  - Create IO context
+  - Add vedio stream
+  - Copy paramter from codec
+- RTMP IO
+  - Open RTMP network IO
+  - Write the stream header to an output media file
+
+
+## Audio2RTMP
+Get audio from microphone  with Qt and upstreaming according to RTMP protocol
+
+### Implement the following function
+- Record audio
+- Audio resample
+  - Init context for resample
+  - Audio ouput allocate
+  - Resample
+- Codec
+  - Init audio codec
+  - Int context for codec
+  - Config audio context 
+  - Open audio codec
+  - pts calculation
+  - Encode
+- Muxing
+  - Init Context
+  - Add a new stream to a media file.
+  - Copy parameter from codec
+- RTMP IO
+  - Open rtmp IO
+  - Allocate the stream private data and write the stream header to an output media file
+  - Upstreaming
+
