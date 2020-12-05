@@ -16,9 +16,14 @@ extern "C"
 
 using namespace std;
 
+// nginx-rtmp url
+static const string outUrl = "rtmp://127.0.0.1:443/live/home";
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+
+    avformat_network_init();
 
     int sampleRate = 44100;
     int channels = 2;
@@ -84,7 +89,7 @@ int main(int argc, char *argv[])
         cout << err << endl;
         getchar();
         return -1;
-    } 
+    }
 
     /// Codec
     // Init Audio codec
@@ -124,7 +129,58 @@ int main(int argc, char *argv[])
         getchar();
         return -1;
     }
-   
+
+    /// Muxing
+    // Init Context
+    AVFormatContext *avFormatContext = nullptr;
+    ret = avformat_alloc_output_context2(&avFormatContext, nullptr, "flv", outUrl.c_str());
+    if (ret != 0)
+    {
+        char buf[1024] = { 0 };
+        av_strerror(ret, buf, sizeof(buf) - 1);
+        cout << buf << endl;
+        getchar();
+        return -1;
+    }
+
+    // Add a new stream to a media file.
+    AVStream *avStream = avformat_new_stream(avFormatContext, nullptr);
+    if (!avStream)
+    {
+        char buf[1024] = { 0 };
+        av_strerror(ret, buf, sizeof(buf) - 1);
+        cout << buf << endl;
+        getchar();
+        return -1;
+    }
+    avStream->codecpar->codec_tag = 0;
+
+    // Copy parameter from codec
+    avcodec_parameters_from_context(avStream->codecpar, audioContext);
+    av_dump_format(avFormatContext, 0, outUrl.c_str(), 1);
+
+    // Open rtmp IO
+    ret = avio_open(&avFormatContext->pb, outUrl.c_str(), AVIO_FLAG_WRITE);
+    if (ret != 0)
+    {
+        char buf[1024] = { 0 };
+        av_strerror(ret, buf, sizeof(buf) - 1);
+        cout << buf << endl;
+        getchar();
+        return -1;
+    }
+
+    //Allocate the stream private data and write the stream header to an output media file.
+    ret = avformat_write_header(avFormatContext, nullptr);
+    if (ret != 0)
+    {
+        char buf[1024] = { 0 };
+        av_strerror(ret, buf, sizeof(buf) - 1);
+        cout << buf << endl;
+        getchar();
+        return -1;
+    }
+
     int readSize = pcm->nb_samples*channels*sampleByte;
     char *buf = new char[readSize];
     int apts = 0;
@@ -146,7 +202,7 @@ int main(int argc, char *argv[])
         }
         if (size != readSize) continue;
         const uint8_t *inData[AV_NUM_DATA_POINTERS] = { 0 };
-        inData[0] = (uint8_t *) buf;
+        inData[0] = (uint8_t *)buf;
         int len = swr_convert(audioResampleContext, pcm->data, pcm->nb_samples, // output parameter
             inData, pcm->nb_samples);
         cout << len << " ";
@@ -163,6 +219,16 @@ int main(int argc, char *argv[])
         av_packet_unref(&pkt);
         ret = avcodec_receive_packet(audioContext, &pkt);
         if (ret != 0) continue;
+
+        // Upstreaming
+        pkt.pts = av_rescale_q(pkt.pts, audioContext->time_base, avStream->time_base);
+        pkt.dts = av_rescale_q(pkt.dts, audioContext->time_base, avStream->time_base);
+        pkt.duration = av_rescale_q(pkt.duration, audioContext->time_base, avStream->time_base);
+        ret = av_interleaved_write_frame(avFormatContext, &pkt);
+        if (ret == 0)
+        {
+            cout << "#" << flush;
+        }
     }
     delete buf;
     return a.exec();
