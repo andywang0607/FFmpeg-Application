@@ -1,5 +1,5 @@
 #pragma once
-#include "datamanager.h"
+#include "DataManager.h"
 
 enum RECORDMETHOD
 {
