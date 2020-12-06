@@ -93,12 +93,14 @@
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MediaEncodeFactory.cpp" />
     <ClCompile Include="VideoCaptureFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioRecordFactory.h" />
     <ClInclude Include="Data.h" />
     <ClInclude Include="DataManager.h" />
+    <ClInclude Include="MediaEncodeFactory.h" />
     <ClInclude Include="VideoCaptureFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
