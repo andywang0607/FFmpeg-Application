@@ -2,7 +2,7 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 
-#pragma comment(lib, "opencv_worldd.lib")
+#pragma comment(lib, "opencv_world.lib")
 
 using namespace std;
 using namespace cv;
