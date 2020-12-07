@@ -7,6 +7,7 @@ extern "C"
 #include <libswresample/swresample.h>
 }
 #include <iostream>
+#include <future>
 
 #pragma comment(lib, "swscale.lib")
 #pragma comment(lib, "avcodec.lib")
@@ -252,7 +253,8 @@ public:
 private:
     bool OpenCodec(AVCodecContext **c)
     {
-        int ret = avcodec_open2(*c, 0, 0);
+        std::future<int> fuRes = std::async(std::launch::async, avcodec_open2, *c, nullptr, nullptr);
+        int ret = fuRes.get();
         if (ret != 0)
         {
             char err[1024] = { 0 };
