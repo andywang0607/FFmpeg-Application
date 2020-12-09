@@ -112,7 +112,6 @@ public:
         videoCodecContext->bit_rate = 50 * 1024 * 8;
         videoCodecContext->width = outWidth;
         videoCodecContext->height = outHeight;
-        videoCodecContext->time_base = { 1,fps };
         videoCodecContext->framerate = { fps,1 };
 
         videoCodecContext->gop_size = 50;
@@ -120,40 +119,57 @@ public:
         videoCodecContext->pix_fmt = AV_PIX_FMT_YUV420P;
         return OpenCodec(&videoCodecContext);
     }
-    AVPacket * EncodeAudio(AVFrame* frame)
+    Data EncodeAudio(Data frame)
     {
-        pcm->pts = apts;
-        apts += av_rescale_q(pcm->nb_samples, { 1,sampleRate }, audioCodecContext->time_base);
-        int ret = avcodec_send_frame(audioCodecContext, pcm);
+        Data tmp;
+        if (frame.size <= 0 || !frame.data)
+            return tmp;
+        AVFrame *p = (AVFrame*)frame.data;
+        if (lastPts == p->pts)
+        {
+            p->pts += 1000;
+        }
+        lastPts = p->pts;
+        int ret = avcodec_send_frame(audioCodecContext, p);
+
         if (ret != 0)
-            return nullptr;
+            return tmp;
         av_packet_unref(&apack);
         ret = avcodec_receive_packet(audioCodecContext, &apack);
         if (ret != 0)
-            return nullptr;
-        return &apack;
+            return tmp;
+        tmp.data = (char*)&apack;
+        tmp.size = apack.size;
+        tmp.pts = frame.pts;
+        return tmp;
     }
 
-    AVPacket * EncodeVideo(AVFrame* frame)
+    Data EncodeVideo(Data frame)
     {
         av_packet_unref(&vpack);
+
+        Data tmp;
+        if (frame.size <= 0 || !frame.data)
+            return tmp;
+        AVFrame *p = (AVFrame *)frame.data;
         // h264 encoding
-        frame->pts = vpts;
-        vpts++;
-        int ret = avcodec_send_frame(videoCodecContext, frame);
+        int ret = avcodec_send_frame(videoCodecContext, p);
         if (ret != 0)
-            return nullptr;
+            return tmp;
 
         ret = avcodec_receive_packet(videoCodecContext, &vpack);
         if (ret != 0 || vpack.size <= 0)
-            return nullptr;
-        return &vpack;
+            return tmp;
+        tmp.data = (char*)&vpack;
+        tmp.size = vpack.size;
+        tmp.pts = frame.pts;
+        return tmp;
     }
     bool InitScale()
     {
         // Init swsContext
         swsContext = sws_getCachedContext(swsContext,
-            inWidth, inHeight, AV_PIX_FMT_BGR24,	 
+            inWidth, inHeight, AV_PIX_FMT_BGR24,
             outWidth, outHeight, AV_PIX_FMT_YUV420P,
             SWS_BICUBIC,
             0, 0, 0
@@ -181,13 +197,15 @@ public:
         return true;
     }
 
-    AVFrame* RGBToYUV(char *rgb)
+    Data RGBToYUV(Data rgb)
     {
+        Data tmp;
+        tmp.pts = rgb.pts;
         //Input data
         uint8_t *indata[AV_NUM_DATA_POINTERS] = { 0 };
         //indata[0] bgrbgrbgr
         //plane indata[0] bbbbb indata[1]ggggg indata[2]rrrrr 
-        indata[0] = (uint8_t*)rgb;
+        indata[0] = (uint8_t*)rgb.data;
         int insize[AV_NUM_DATA_POINTERS] = { 0 };
 
         insize[0] = inWidth * inPixSize;
@@ -196,9 +214,17 @@ public:
             yuv->data, yuv->linesize);
         if (h <= 0)
         {
-            return nullptr;
+            return tmp;
         }
-        return yuv;
+        yuv->pts = rgb.pts;
+        tmp.data = (char*)yuv;
+        int *p = yuv->linesize;
+        while ((*p))
+        {
+            tmp.size += (*p)*outHeight;
+            p++;
+        }
+        return tmp;
     }
 
     bool InitResample()
@@ -237,18 +263,23 @@ public:
         }
         return true;
     }
-    AVFrame *Resample(char *data)
+    Data Resample(Data data)
     {
+        Data tmp;
         const uint8_t *indata[AV_NUM_DATA_POINTERS] = { 0 };
-        indata[0] = (uint8_t *)data;
+        indata[0] = (uint8_t *)data.data;
         int len = swr_convert(swrContext, pcm->data, pcm->nb_samples, //Output parameter
             indata, pcm->nb_samples
         );
         if (len <= 0)
         {
-            return nullptr;
+            return tmp;
         }
-        return pcm;
+        pcm->pts = data.pts;
+        tmp.data = (char*)pcm;
+        tmp.size = pcm->nb_samples*pcm->channels * 2;
+        tmp.pts = data.pts;
+        return tmp;
     }
 private:
     bool OpenCodec(AVCodecContext **c)
@@ -285,6 +316,7 @@ private:
 
         c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         c->thread_count = GetCpuNum();
+        c->time_base = { 1,1000000 }; 
         return c;
     }
     // Context for size and format transformation
@@ -301,6 +333,7 @@ private:
     AVPacket apack = { 0 };
     int vpts = 0;
     int apts = 0;
+    long long lastPts = -1;
 };
 
 MediaEncodeFactory::MediaEncodeFactory()

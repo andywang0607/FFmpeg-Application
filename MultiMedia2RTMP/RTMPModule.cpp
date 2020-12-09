@@ -116,9 +116,11 @@ bool RTMPModule::SendHead()
     return true;
 }
 
-bool RTMPModule::SendFrame(AVPacket *pack, int streamIndex)
+bool RTMPModule::SendFrame(Data data, int streamIndex)
 {
-    if (!pack || pack->size <= 0 || !pack->data)return false;
+    if (!data.data || data.size <= 0)
+        return false;
+    AVPacket *pack = (AVPacket *)data.data;
     pack->stream_index = streamIndex;
     AVRational stime;
     AVRational dtime;

@@ -1,6 +1,5 @@
 #pragma once
-struct AVFrame;
-struct AVPacket;
+#include "Data.h"
 class AVCodecContext;
 
 enum SAMPLEFMT
@@ -26,16 +25,16 @@ public:
     virtual bool InitAudioCode() = 0;
 
     // Resample
-    virtual AVFrame *Resample(char *data) = 0;
+    virtual Data Resample(Data data) = 0;
 
     // RBB to YUV transform
-    virtual AVFrame* RGBToYUV(char *rgb) = 0;
+    virtual Data RGBToYUV(Data rgb) = 0;
 
     // Vedio encoding
-    virtual AVPacket * EncodeVideo(AVFrame* frame) = 0;
+    virtual Data EncodeVideo(Data frame) = 0;
 
     // Audio encoding
-    virtual AVPacket * EncodeAudio(AVFrame* frame) = 0;
+    virtual Data EncodeAudio(Data frame) = 0;
 
     static MediaEncodeFactory * Get(unsigned char index = 0);
 

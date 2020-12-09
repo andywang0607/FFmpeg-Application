@@ -1,5 +1,7 @@
 #pragma once
 #include <memory>
+#include "Data.h"
+
 class AVCodecContext;
 class AVPacket;
 
@@ -20,7 +22,7 @@ public:
     bool SendHead();
 
     // Upstreaming
-    bool SendFrame(AVPacket *pkt, int streamIndex = 0);
+    bool SendFrame(Data pkt, int streamIndex = 0);
 
 private:
     static RTMPModule *mInstance;

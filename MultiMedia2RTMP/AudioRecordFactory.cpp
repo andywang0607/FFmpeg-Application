@@ -33,7 +33,7 @@ public:
                 continue;
             }
             // Push data of a frame to list
-            Push(Data(buf, readSize));
+            Push(Data(buf, readSize, GetCurTime()));
         }
         delete buf;
     }

@@ -27,7 +27,7 @@ public:
                 msleep(1);
                 continue;
             }
-            Data d((char*)frame.data, frame.cols*frame.rows*frame.elemSize());
+            Data d((char*)frame.data, frame.cols*frame.rows*frame.elemSize(), GetCurTime());
             Push(d);
         }
     }
@@ -41,11 +41,11 @@ public:
             return false;
         }
         cout << camIndex << " cam open success" << endl;
-        cam.set(CV_CAP_PROP_FPS, 30);
+        cam.set(CV_CAP_PROP_FPS, 25);
         width = cam.get(CAP_PROP_FRAME_WIDTH);
         height = cam.get(CAP_PROP_FRAME_HEIGHT);
         fps = cam.get(CAP_PROP_FPS);
-        if (fps == 0) fps = 30;
+        if (fps == 0) fps = 25;
         return true;
     }
 

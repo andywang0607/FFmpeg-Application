@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     
+    long long beginTime = GetCurTime();
     while (true)
     {
         // Get frame data
@@ -130,11 +131,12 @@ int main(int argc, char *argv[])
         // Audio processing
         if (audioData.size > 0)
         {
+            audioData.pts = audioData.pts - beginTime;
             // Resample
-            AVFrame *pcm = mediaEncodeInstance->Resample(audioData.data);
+            Data pcm = mediaEncodeInstance->Resample(audioData);
             audioData.Release();
-            AVPacket *pkt = mediaEncodeInstance->EncodeAudio(pcm);
-            if (pkt)
+            Data pkt = mediaEncodeInstance->EncodeAudio(pcm);
+            if (pkt.size > 0)
             {
                 // Upstreaming
                 if (rtmpInstance->SendFrame(pkt, aindex))
@@ -147,10 +149,11 @@ int main(int argc, char *argv[])
         // Video processing
         if (videoData.size > 0)
         {
-            AVFrame *yuv = mediaEncodeInstance->RGBToYUV(videoData.data);
+            videoData.pts = videoData.pts - beginTime;
+            Data yuv = mediaEncodeInstance->RGBToYUV(videoData);
             videoData.Release();
-            AVPacket *pkt = mediaEncodeInstance->EncodeVideo(yuv);
-            if (pkt)
+            Data pkt = mediaEncodeInstance->EncodeVideo(yuv);
+            if (pkt.size > 0)
             {
                 // Upstreaming
                 if (rtmpInstance->SendFrame(pkt, vindex))
