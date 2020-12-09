@@ -4,6 +4,7 @@ Just some small application for testing FFMPEG
  - Vedio2RTMP: Upstreaming a local flv file according to RTMP protocol
  - WebCam2RTMP: Get image from webcam and upstreaming according to RTMP protocol
  - Audio2RTMP: Get audio from microphone and upstreaming according to RTMP protocol
+ - MultiMedia2RTMP: Upstreaming video and audio simultaneously and finish synchronized 
 
 ## Environment
 - OS: Win10
@@ -90,3 +91,15 @@ Get audio from microphone  with Qt and upstreaming according to RTMP protocol
   - Allocate the stream private data and write the stream header to an output media file
   - Upstreaming
 
+## MultiMedia2RTMP
+
+Implement AudioRecord, VideoCapture, MediaEncode Factory and RTMP module. Upstreaming video and audio simultaneously and finish synchronized.
+
+- AudioRecord Factory
+  - Finish a concrete factory with Qt
+- VideoCapture Factory
+  - Finish a concrete factory with opencv
+- MediaEncode Factory
+  - Finish a concrete factory with FFMPEG
+- RTMP module
+  -  Implement muxing and rtmp function with FFMPEG
