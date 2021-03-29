@@ -1,0 +1,1 @@
+ffmpeg -f x11grab -framerate 30 -video_size 1280x720 -i :0.0 -f pulse -i default -c:v libx264 -preset fast -maxrate 2500k -bufsize 5000k -g 60 -vf format=yuv420p -c:a aac -b:a 128k -f rtsp rtsp://localhost:8554/mystream
